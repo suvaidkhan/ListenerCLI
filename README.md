@@ -1,6 +1,12 @@
 # ListenerCLI
 
+[![PyPI version](https://badge.fury.io/py/listenercli.svg)](https://badge.fury.io/py/listenercli)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/listenercli)](https://pypi.org/project/listenercli/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 A fast and easy CLI-based speech-to-text tool that records audio from your microphone, transcribes it using Whisper AI, and automatically copies the result to your clipboard.
+
+**[📦 View on PyPI](https://pypi.org/project/listenercli/)**
 
 ```
 ╔═══════════════════════════════════════╗
