@@ -1,6 +1,5 @@
 import os
 import sys
-import threading
 import time
 import wave
 from pathlib import Path
@@ -82,7 +81,7 @@ class Recorder:
         self._prepare_wave_file()
 
         try:
-            stream = sd.InputStream(samplerate=self.sample_rate, channels=self.channels,callback=self._audio_callback, device=self.sample_rate,
+            stream = sd.InputStream(samplerate=self.sample_rate, channels=self.channels, callback=self._audio_callback, device=None,
                                     dtype=np.float32)
         except Exception as e:
             self._close_wave_file()
@@ -162,7 +161,9 @@ class WhisperTranscriber:
         self.language = language or os.environ.get("LISTENER_CLI_LANGUAGE")
         self.model = self._load_model()
 
-    def _get_model_name(self, model_name: str) -> str:
+    def _get_model_name(self, model_name: Optional[str]) -> str:
+        if model_name is None:
+            return "base"
         model = model_name.lower()
         if model not in self.VALID_MODELS:
             console.print(f"⚠️ [bold yellow]Invalid model '{model}', using 'base' instead[/bold yellow]")
@@ -255,14 +256,29 @@ def copy_to_clipboard(text: str):
     pyperclip.copy(text)
     console.print("✅ [bold green]Copied to clipboard![/bold green]")
 
+def print_banner():
+    banner = """
+╔═══════════════════════════════════════╗
+║                                       ║
+║     🎤  LISTENER CLI  🎤              ║
+║                                       ║
+║     Speech-to-Text Transcription     ║
+║                                       ║
+╚═══════════════════════════════════════╝
+"""
+    console.print(f"[bold cyan]{banner}[/bold cyan]")
+
 @click.command()
 @click.option("--sample-rate", default=16000, help="Sample rate for audio recording")
 @click.option("--channels", default=1, help="Number of audio channels")
+@click.option("--model", default="base", help="Whisper model to use (default: base)")
 @click.option("--list-models", is_flag=True, help="List available Whisper models and exit")
 @click.option("--language", help="Force language detection (e.g., en, es, fr)")
 @click.option("--last", is_flag=True, help="Transcribe the last recorded audio file")
-def main(sample_rate: int, channels: int, list_models: bool, language: Optional[str], last: bool):
+def main(sample_rate: int, channels: int, model: str, list_models: bool, language: Optional[str], last: bool):
     """Record audio from microphone, transcribe it, and copy to clipboard."""
+
+    print_banner()
 
     if list_models:
         WhisperTranscriber.list_models()
@@ -280,7 +296,7 @@ def main(sample_rate: int, channels: int, list_models: bool, language: Optional[
         else:
             recorder = Recorder(sample_rate, channels)
             audio_file_path = recorder.record()
-        transcriber = WhisperTranscriber(language=language)
+        transcriber = WhisperTranscriber(model_name=model, language=language)
         transcription, _ = transcriber.transcribe(audio_file_path, show_progress=True)
 
         try:

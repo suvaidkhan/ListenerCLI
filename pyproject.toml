@@ -20,4 +20,5 @@ dependencies = [
 ]
 
 [project.scripts]
+lci = "ListenerCLI.cli:main"
 listenercli = "ListenerCLI.cli:main"
